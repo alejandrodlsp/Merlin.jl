@@ -10,8 +10,8 @@ struct LoggerData
 end
 
 function Logger_Init()::LoggerData
-    io = missing
-    logger = missing
+    io = nothing
+    logger = nothing
     
     @assert haskey(ENV, "MERLIN_ENVIRONMENT") "Merlin environment variable undefined. Did you forget to define ENV[\"MERLIN_ENVIRONMENT\"] ?"
 
@@ -20,16 +20,20 @@ function Logger_Init()::LoggerData
         if haskey(ENV, "MERLIN_LOG_PATH")
             io = open(ENV["MERLIN_LOG_PATH"], "w+")
             logger = SimpleLogger(io)
+            println("1")
         else
             logger = ConsoleLogger()
+            println("2")
         end
     else
+        println("3")
         Logging.disable_logging(Logging.Error) # Disable warn, debug and info
         logger = NullLogger()
     end
 
-    @assert !ismissing(logger) "Failed to initialize logger!"
+    # @assert !isnothing(logger) "Failed to initialize logger!"
 
+    println(logger)
     global_logger(logger)
     LoggerData(logger, io)
 end
