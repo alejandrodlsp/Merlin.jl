@@ -81,17 +81,14 @@ end
 
 
 function Window_SetIcon(windowData::WindowData)
-    if !haskey(ENV, "MERLIN_RESOURCES_FOLDER_PATH")
-      @info "Did not load window icon, resources folder not defined. Try setting ENV[MERLIN_RESOURCES_FOLDER_PATH]"
-      return
-    end
+    @assert haskey(ENV, "MERLIN_RESOURCES_FOLDER_PATH") "Did not load window icon, resources folder not defined. Try setting ENV[MERLIN_RESOURCES_FOLDER_PATH]"
 
-    if !isdir(ENV["MERLIN_RESOURCES_FOLDER_PATH"] * "/Icon")
-      @info "Did not load window icon, resources folder not found. Did you create a /Icon/icon.png folder in your resources directory?"
-    end
+    @assert isdir(ENV["MERLIN_RESOURCES_FOLDER_PATH"] * "/Icon") "Did not load window icon, resources folder not found. Did you create a /Icon/icon.png folder in your resources directory?"
 
-    icon = TextureResource_Load("Resources/Icon/icon.png").data
+    icon = TextureResource_Load(ENV["MERLIN_RESOURCES_FOLDER_PATH"] * "/Icon" * "/icon.png").data
     
+    @assert !isnothing(icon) "Failed to load window icon, did you add an icon under /Resources/Icon/icon.png ?"
+
     buffs = reinterpret(NTuple{4,UInt8}, icon)
     
     GLFW.SetWindowIcon(windowData.NativeWindow, buffs)
