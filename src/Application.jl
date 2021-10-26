@@ -45,6 +45,8 @@ struct ApplicationData
 end
 
 function Application_Init(params::ApplicationParams)::ApplicationData
+    dotenv()
+
     loggerData = Logger_Init()
     Resource_Init()
 
