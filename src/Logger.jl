@@ -1,4 +1,4 @@
-qusing Logging
+using Logging
 
 macro assert(ex, x)
     return :( $ex ? nothing : @error x )
