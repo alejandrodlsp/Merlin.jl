@@ -19,3 +19,5 @@ struct WindowMovedEventData <: EventData
 
     WindowMovedEventData(posx::Cint, posy::Cint) = new(EventTypeWindowMoved, posx, posy)
 end
+
+export WindowClose, WindowSizeEventData, WindowMovedEventData

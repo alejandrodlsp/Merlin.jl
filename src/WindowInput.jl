@@ -1,5 +1,5 @@
 include("Event/Event.jl")
-# include("Input.jl")
+include("Input.jl")
 
 import GLFW
 using ModernGL

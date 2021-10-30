@@ -29,3 +29,5 @@ function Event_Dispatch(eventData::EventData, eventType::EventType, fnc)
     fnc(eventData)
   end
 end        
+
+export EventType, EventData, Event_Dispatch, EventTypeNone, EventTypeKeyPressed, EventTypeKeyReleased, EventTypeMouseButtonPressed, EventTypeMouseButtonReleased, EventTypeMouseMoved, EventTypeMouseScrolled, EventTypeWindowClose, EventTypeWindowResize, EventTypeWindowFocus, EventTypeWindowLostFocus, EventTypeWindowMoved, EventTypeAppTick, EventTypeAppUpdate, EventTypeAppRender

@@ -100,3 +100,5 @@ function SetCursorMode(windowData::WindowData, mode::UInt32)
     @debug "Window cursor mode changed to: " mode
     GLFW.SetInputMode(windowData.NativeWindow, GLFW.CURSOR, mode)
 end
+
+export WindowException, WindowProps, Window_SetIcon, SetCursorMode

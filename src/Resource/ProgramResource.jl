@@ -38,3 +38,5 @@ function ProgramResource_Unload(program::ProgramResourceData)
     Program_Destroy(program.program)
     ResPool_Unregister(program.path)
 end
+
+export ProgramResource_Load, ProgramResource_Unload

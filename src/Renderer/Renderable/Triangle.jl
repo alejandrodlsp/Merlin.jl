@@ -44,3 +44,5 @@ function Triangle_Render(triangle::TriangleData)
     glBindVertexArray(triangle.vao)
     glDrawArrays(GL_TRIANGLES, 0, 3)
 end
+
+export Triangle_Create, Triangle_Render

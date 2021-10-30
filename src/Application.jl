@@ -86,3 +86,5 @@ end
 function Application_ShouldClose(applicationData::ApplicationData)
     Window_ShouldClose(applicationData.windowData)
 end
+
+export Application_Init, Application_Run, Application_ShouldClose, Application_Shutdown, ApplicationParams, ApplicationData

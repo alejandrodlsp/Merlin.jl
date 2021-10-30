@@ -22,3 +22,5 @@ end
 function TextureResource_Unload(texture_path)
     ResPool_Unregister(texture_path)
 end
+
+export TextureResource_Load, TextureResource_Unload

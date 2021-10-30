@@ -5,3 +5,5 @@ struct KeyEventData <: EventData
 
     KeyEventData(type::EventType, code::Cint, repeat::Cint) = new(type, code, repeat)
 end
+
+export KeyEventData

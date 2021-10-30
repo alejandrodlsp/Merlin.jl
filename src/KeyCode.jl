@@ -138,3 +138,5 @@ end
 	KEY_RIGHT_SUPER        = 347
 	KEY_MENU               = 348
 end
+
+export KeyAction, KeyCode, MOD_SHIFT, MOD_CONTROL, MOD_ALT, MOD_SUPER

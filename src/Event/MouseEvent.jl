@@ -22,3 +22,5 @@ struct MouseScrollEventData <: EventData
 
     MouseScrollEventData(scrollX::Float64, scrollY::Float64) = new(EventTypeMouseScrolled, scrollX, scrollY)
 end
+
+export MouseMovedEventData, MouseButtonEventData, MouseScrollEventData

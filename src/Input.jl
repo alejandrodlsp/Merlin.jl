@@ -24,3 +24,5 @@ function Input_GetMouseY()
     _, y = GLFW.GetCursorPos(WINDOW_DATA)
     y
 end
+
+export Input_IsKeyPressed, Input_IsMouseButtonPressed, Input_GetMousePos, Input_GetMouseX, Input_GetMouseY
