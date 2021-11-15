@@ -4,30 +4,39 @@ import GLFW, ModernGL
 import Base:String, UInt
 using FileIO
 
-# Define resource pool only if not already defined
-(@isdefined WINDOW_DATA) || ( WINDOW_DATA = nothing )
-
-
 struct WindowException <: Exception
     var::String
 end
 
 struct WindowProps
-    windowSize::Tuple{Cint,Cint}
-    maxWindowSize::Tuple{Cint,Cint}
-    minWindowSize::Tuple{Cint,Cint}
-
+    windowSize::Vector2{Int}
+    maxWindowSize::Vector2{Int}
+    minWindowSize::Vector2{Int}
     fullscreen::Bool
-    
     name::String
-    eventCallback::Function
 end
+
+WindowProps(  ;WindowSize::Vector2{Int}=Vector2(800, 800), 
+              MaxWindowSize::Vector2{Int}=Vector2(0, 0),
+              MinWindowSize::Vector2{Int}=Vector2(0, 0),
+              Fullscreen::Bool=false,
+              Name::String="Merlin Engine application" ) = WindowProps(
+                WindowSize, MaxWindowSize, MinWindowSize, Fullscreen, Name
+              )
 
 struct WindowData
     NativeWindow::GLFW.Window
 end
 
-function Window_Init(props::WindowProps)::WindowData
+# Define window data only if not already defined
+(@isdefined WINDOW_DATA) || ( WINDOW_DATA = nothing )
+
+function Window_Get()::WindowData 
+    (@isdefined WINDOW_DATA) ||  @error "Trying to access window when it is not defined"
+    WINDOW_DATA
+end
+
+function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
     nativeWindow = C_NULL
     @debug "Initializating window context"
     GLFW.Init() != true && thrown(WindowException("Failed to initialize GLFW"))
@@ -40,47 +49,47 @@ function Window_Init(props::WindowProps)::WindowData
     @debug "Creating GLFW window context"
 
     if props.fullscreen
-        nativeWindow = GLFW.CreateWindow(props.windowSize[1], props.windowSize[2], props.name, GLFW.GetPrimaryMonitor())
+        nativeWindow = GLFW.CreateWindow(props.windowSize.x, props.windowSize.y, props.name, GLFW.GetPrimaryMonitor())
     else
-        nativeWindow = GLFW.CreateWindow(props.windowSize[1], props.windowSize[2], props.name)
+        nativeWindow = GLFW.CreateWindow(props.windowSize.x, props.windowSize.y, props.name)
     end
         
     nativeWindow == C_NULL && thrown(WindowException("Failed to create GLFW window context"))
 
     GLFW.MakeContextCurrent(nativeWindow)
-        
-    WindowInput_RegisterInputCallbacks(nativeWindow, props.eventCallback)
 
     GLFW.SetWindowSizeLimits(nativeWindow, 
-          iszero(props.minWindowSize[1]) ? GLFW.DONT_CARE : props.minWindowSize[1], 
-          iszero(props.minWindowSize[2]) ? GLFW.DONT_CARE : props.minWindowSize[2], 
-          iszero(props.maxWindowSize[1]) ? GLFW.DONT_CARE : props.maxWindowSize[1], 
-          iszero(props.maxWindowSize[2]) ? GLFW.DONT_CARE : props.maxWindowSize[2]);
-
-        
-    WINDOW_DATA::WindowData = WindowData(nativeWindow)
-    Window_SetIcon(WINDOW_DATA)
-
+          iszero(props.minWindowSize.x) ? GLFW.DONT_CARE : props.minWindowSize.x, 
+          iszero(props.minWindowSize.y) ? GLFW.DONT_CARE : props.minWindowSize.y, 
+          iszero(props.maxWindowSize.x) ? GLFW.DONT_CARE : props.maxWindowSize.x, 
+          iszero(props.maxWindowSize.y) ? GLFW.DONT_CARE : props.maxWindowSize.y);
+    
+    
     @debug "Window initialization complete"
+    global WINDOW_DATA = WindowData(nativeWindow)
+
+    WindowInput_RegisterInputCallbacks(nativeWindow, eventCallback)
+    Window_SetIcon()
+
+    
     WINDOW_DATA
 end
 
-function Window_Update(windowData::WindowData)
+function Window_Update()
     GLFW.PollEvents()
-    GLFW.SwapBuffers(windowData.NativeWindow)
+    GLFW.SwapBuffers(Window_Get().NativeWindow)
 end
     
-function Window_Shutdown(windowData::WindowData)
-    @debug "Shutting down GLFW window context"
-    GLFW.DestroyWindow(windowData.NativeWindow)
+function Window_Shutdown()
+@debug "Shutting down GLFW window context"
+    GLFW.DestroyWindow(Window_Get().NativeWindow)
 end
 
-function Window_ShouldClose(windowData::WindowData)::Bool
-    GLFW.WindowShouldClose(windowData.NativeWindow)
+function Window_ShouldClose()::Bool
+    GLFW.WindowShouldClose(Window_Get().NativeWindow)
 end
 
-
-function Window_SetIcon(windowData::WindowData)
+function Window_SetIcon()
     @assert haskey(ENV, "MERLIN_RESOURCES_FOLDER_PATH") "Did not load window icon, resources folder not defined. Try setting ENV[MERLIN_RESOURCES_FOLDER_PATH]"
 
     @assert isdir(ENV["MERLIN_RESOURCES_FOLDER_PATH"] * "/Icon") "Did not load window icon, resources folder not found. Did you create a /Icon/icon.png folder in your resources directory?"
@@ -89,16 +98,13 @@ function Window_SetIcon(windowData::WindowData)
     
     buffs = reinterpret(NTuple{4,UInt8}, icon)
     
-    GLFW.SetWindowIcon(windowData.NativeWindow, buffs)
+    GLFW.SetWindowIcon(Window_Get().NativeWindow, buffs)
     GLFW.PollEvents()
-end
+    end
 
-# 
-# Mode: [ GLFW.CURSOR_DISABLED, GLFW.CURSOR_HIDDEN, GLFW.CURSOR_NORMAL ]
-# 
-function SetCursorMode(windowData::WindowData, mode::UInt32)
+function SetCursorMode(mode::UInt32)
     @debug "Window cursor mode changed to: " mode
-    GLFW.SetInputMode(windowData.NativeWindow, GLFW.CURSOR, mode)
+    GLFW.SetInputMode(Window_Get().NativeWindow, GLFW.CURSOR, mode)
 end
 
-export WindowException, WindowProps, Window_SetIcon, SetCursorMode
+export WindowException, WindowProps, Window_SetIcon, SetCursorMode, Window_Get

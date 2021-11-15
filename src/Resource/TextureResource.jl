@@ -9,18 +9,18 @@ struct TextureResourceData <: ResourceData
 end
 
 function TextureResource_Load(texture_path)::TextureResourceData
-    if (ResPool_Exists(texture_path))
-        return ResPool_Get(texture_path)::TextureResourceData
+    if (ResourcePool_Exists(texture_path))
+        return ResourcePool_GetElement(texture_path)::TextureResourceData
     end
 
     data = load(texture_path)
     texture_data = TextureResourceData(texture_path, data)
-    ResPool_Register(texture_path, texture_data)
+    ResourcePool_Register(texture_path, texture_data)
     texture_data
 end
 
 function TextureResource_Unload(texture_path)
-    ResPool_Unregister(texture_path)
+    ResourcePool_Unregister(texture_path)
 end
 
 export TextureResource_Load, TextureResource_Unload

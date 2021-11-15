@@ -11,8 +11,8 @@ function Program_DefaultProgramPath()::String
 end
 
 function ProgramResource_Load(program_path::String)::ProgramResourceData
-    if (ResPool_Exists(program_path))
-        return (ResPool_Get(program_path)::ProgramResourceData)
+    if (ResourcePool_Exists(program_path))
+        return (ResourcePool_GetElement(program_path)::ProgramResourceData)
     end
 
     source = read(program_path, String)
@@ -30,13 +30,13 @@ function ProgramResource_Load(program_path::String)::ProgramResourceData
 
     program_data = ProgramResourceData(program_path, source, program)
     
-    ResPool_Register(program_path, program_data)
+    ResourcePool_Register(program_path, program_data)
     program_data
 end
 
 function ProgramResource_Unload(program::ProgramResourceData)
     Program_Destroy(program.program)
-    ResPool_Unregister(program.path)
+    ResourcePool_Unregister(program.path)
 end
 
 export ProgramResource_Load, ProgramResource_Unload

@@ -1,3 +1,4 @@
+include("Math/Math.jl")
 include("Renderer/Renderer.jl")
 include("Resource/Resource.jl")
 include("Logger.jl")
@@ -10,27 +11,17 @@ using ConfigEnv
     
 """
 struct ApplicationParams
-    windowSize::Tuple{Cint,Cint}
-    maxWindowSize::Tuple{Cint,Cint}
-    minWindowSize::Tuple{Cint,Cint}
-    windowFullscreen::Bool
-    windowName::String
+    window::WindowProps
     onEvent::Function
     onUpdate::Function
     onRender::Function
-    ApplicationParams( ;WindowSize::Tuple{Cint,Cint}=(Cint(800), Cint(800)), 
-                        MaxWindowSize::Tuple{Cint,Cint}=(Cint(0), Cint(0)),
-                        MinWindowSize::Tuple{Cint,Cint}=(Cint(0), Cint(0)),
-                        Fullscreen::Bool=false,
+    ApplicationParams( ;
+                        Window::WindowProps=WindowProps(),
                         OnEvent::Function=(e) -> (),
                         OnUpdate::Function=() -> (),
                         OnRender::Function=() -> (),
-                        Name::String="Merlin Engine application") = new(
-                          WindowSize,
-                          MaxWindowSize,
-                          MinWindowSize,
-                          Fullscreen, 
-                          Name,
+                        ) = new(
+                          Window,
                           OnEvent,
                           OnUpdate,
                           OnRender
@@ -38,10 +29,17 @@ struct ApplicationParams
 end
 
 struct ApplicationData
-    windowData::WindowData
     loggerData::LoggerData
     onUpdate::Function
     onRender::Function
+end
+
+# Define application data only if not already defined
+(@isdefined APPLICATION_DATA) || ( APPLICATION_DATA = nothing )
+
+function Application_Get()::ApplicationData
+    (@isdefined APPLICATION_DATA) ||  @error "Trying to access application when it is not defined"
+    APPLICATION_DATA
 end
 
 function Application_Init(params::ApplicationParams)::ApplicationData
@@ -50,41 +48,34 @@ function Application_Init(params::ApplicationParams)::ApplicationData
     loggerData = Logger_Init()
     Resource_Init()
 
-    windowData = Window_Init( WindowProps(
-      params.windowSize,
-      params.maxWindowSize,
-      params.minWindowSize,
-      params.windowFullscreen,
-      params.windowName,
-      params.onEvent
-    ) )
+    Window_Init(params.window, params.onEvent)
 
-    ApplicationData(windowData, loggerData, params.onUpdate, params.onRender)
+    global APPLICATION_DATA = ApplicationData(loggerData, params.onUpdate, params.onRender)
 end
 
-function Application_Run(applicationData::ApplicationData)
+function Application_Run()
     glClearColor(0.1, 0.1, 0.1, 1.0)
 
-    while !Application_ShouldClose(applicationData)
-        applicationData.onUpdate()
+    while !Application_ShouldClose()
+        Application_Get().onUpdate()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        applicationData.onRender()
+        Application_Get().onRender()
 
-        Window_Update(applicationData.windowData)
+        Window_Update()
     end
     
-    Application_Shutdown(applicationData)
+    Application_Shutdown()
 end
 
-function Application_Shutdown(applicationData::ApplicationData)
-    Window_Shutdown(applicationData.windowData)
-    Logger_Shutdown(applicationData.loggerData)
-    ResPool_Flush()
+function Application_Shutdown()
+    Window_Shutdown()
+    Logger_Shutdown(Application_Get().loggerData)
+    ResourcePool_Flush()
 end
 
-function Application_ShouldClose(applicationData::ApplicationData)
-    Window_ShouldClose(applicationData.windowData)
+function Application_ShouldClose()
+    Window_ShouldClose()
 end
 
-export Application_Init, Application_Run, Application_ShouldClose, Application_Shutdown, ApplicationParams, ApplicationData
+export Application_Init, Application_Run, Application_ShouldClose, Application_Shutdown, ApplicationParams, ApplicationData, Application_Get
