@@ -4,14 +4,15 @@ mutable struct Transform
     position::Vector3{Float64}
     rotation::Vector3{Float64}
     scale::Vector3{Float64}
-    parent::Transform
-    children::Vector{Transform}
-
-    Transform(  position, 
-                rotation=Vector3(0.0, 0.0, 0.0), 
-                scale=Vector3(1.0, 1.0, 1.0)
-                ; parent=nothing) = Transform(position, rotation, scale, parent, Vector{Transform}())
+    parent
+    children
 end
+
+Transform(  position::Vector3{Float64}, 
+            rotation::Vector3{Float64}=Vector3(0.0, 0.0, 0.0), 
+            scale::Vector3{Float64}=Vector3(1.0, 1.0, 1.0),
+            parent::Transform=missing,
+            children::Vector{Transform}=missing) = Transform(position, rotation, scale, parent, children)
 
 function SetParent(transform::Transform, parent::Transform)
     if !isnothing(transform.parent)
@@ -22,7 +23,11 @@ function SetParent(transform::Transform, parent::Transform)
     push!(parent.children, transform)
 end
 
-function GetModelMatrix()
+function GetModelMatrix(transform::Transform)
+    GLfloat[1.0 0.0 0.0 transform.position.x;
+                    0.0 1.0 0.0 transform.position.y;
+                    0.0 0.0 1.0 transform.position.z;
+                    0.0 0.0 0.0 1.0]
 end
 
-export Transform, SetParent
+export Transform, SetParent, GetModelMatrix

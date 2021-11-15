@@ -4,24 +4,24 @@ include("KeyCode.jl")
 include("MouseCode.jl")
 
 function Input_IsKeyPressed(keycode::KeyCode)
-    GLFW.GetKey(WINDOW_DATA, Cint(keycode))
+    GLFW.GetKey(Window_GetNative(), Cint(keycode))
 end
 
 function Input_IsMouseButtonPressed(button::MouseCode)
-    GLFW.GetMouseButton(WINDOW_DATA, Cint(button))
+    GLFW.GetMouseButton(Window_GetNative(), Cint(button))
 end
 
 function Input_GetMousePos()
-    GLFW.GetCursorPos(WINDOW_DATA)
+    GLFW.GetCursorPos(Window_GetNative())
 end
 
 function Input_GetMouseX()
-    x, _ = GLFW.GetCursorPos(WINDOW_DATA)
+    x, _ = GLFW.GetCursorPos(Window_GetNative())
     x
 end
 
 function Input_GetMouseY()
-    _, y = GLFW.GetCursorPos(WINDOW_DATA)
+    _, y = GLFW.GetCursorPos(Window_GetNative())
     y
 end
 

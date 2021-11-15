@@ -36,6 +36,10 @@ function Window_Get()::WindowData
     WINDOW_DATA
 end
 
+function Window_GetNative()::GLFW.Window
+    Window_Get().NativeWindow
+end
+
 function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
     nativeWindow = C_NULL
     @debug "Initializating window context"
@@ -77,16 +81,16 @@ end
 
 function Window_Update()
     GLFW.PollEvents()
-    GLFW.SwapBuffers(Window_Get().NativeWindow)
+    GLFW.SwapBuffers(Window_GetNative())
 end
     
 function Window_Shutdown()
 @debug "Shutting down GLFW window context"
-    GLFW.DestroyWindow(Window_Get().NativeWindow)
+    GLFW.DestroyWindow(Window_GetNative())
 end
 
 function Window_ShouldClose()::Bool
-    GLFW.WindowShouldClose(Window_Get().NativeWindow)
+    GLFW.WindowShouldClose(Window_GetNative())
 end
 
 function Window_SetIcon()
@@ -98,13 +102,13 @@ function Window_SetIcon()
     
     buffs = reinterpret(NTuple{4,UInt8}, icon)
     
-    GLFW.SetWindowIcon(Window_Get().NativeWindow, buffs)
+    GLFW.SetWindowIcon(Window_GetNative(), buffs)
     GLFW.PollEvents()
     end
 
 function SetCursorMode(mode::UInt32)
     @debug "Window cursor mode changed to: " mode
-    GLFW.SetInputMode(Window_Get().NativeWindow, GLFW.CURSOR, mode)
+    GLFW.SetInputMode(Window_GetNative(), GLFW.CURSOR, mode)
 end
 
-export WindowException, WindowProps, Window_SetIcon, SetCursorMode, Window_Get
+export WindowException, WindowProps, Window_SetIcon, SetCursorMode, Window_Get, Window_GetNative

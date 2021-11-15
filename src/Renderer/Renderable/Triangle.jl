@@ -1,48 +1,42 @@
 using CSyntax, ModernGL
 
-struct TriangleData
-    vbo_vertices::GLuint
-    vbo_colors::GLuint
+struct TriangleData <: Renderable
+    vbo::GLuint
     vao::GLuint
     program::ProgramData
 end
 
-function Triangle_Create(vertices, colors):TriangleData
+function Triangle():TriangleData
     program = ProgramResource_Load(Program_DefaultProgramPath()).program
 
+    vertices = GLfloat[ 0.0,  0.5, 0.0,
+                      0.5, -0.5, 0.0,
+                     -0.5, -0.5, 0.0]
+
     # create buffers located in the memory of graphic card
-    vbo_vertices = GLuint(0)
-    @c glGenBuffers(1, &vbo_vertices)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices)
+    vbo = GLuint(0)
+    @c glGenBuffers(1, &vbo)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW)
 
     # create VAO
     vao = GLuint(0)
     @c glGenVertexArrays(1, &vao)
     glBindVertexArray(vao)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, C_NULL)
 
     glEnableVertexAttribArray(0)
 
-    vbo_colors = GLuint(0)
-
-    if colors != nothing
-        @c glGenBuffers(1, &vbo_colors)
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_colors)
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW)
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_colors)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, C_NULL)
-        glEnableVertexAttribArray(1)
-    end
-
-    TriangleData(vbo_vertices, vbo_colors, vao, program)
+    TriangleData(vbo, vao, program)
 end
 
-function Triangle_Render(triangle::TriangleData)
+
+function Render(triangle::TriangleData, transform::Transform)
+    Program_SetMat4(triangle.program, "uModel", GetModelMatrix(transform))
     Program_Use(triangle.program)
     glBindVertexArray(triangle.vao)
     glDrawArrays(GL_TRIANGLES, 0, 3)
 end
 
-export Triangle_Create, Triangle_Render
+export Triangle, Render

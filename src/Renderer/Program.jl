@@ -40,3 +40,23 @@ end
 function Program_Use(program::ProgramData)
     glUseProgram(program.id)
 end
+
+function Program_SetBool(program::ProgramData, name::String, value::Bool) 
+    Program_Use(program)
+    glUniform1i(glGetUniformLocation(program.id, name), value)
+end
+
+function Program_SetInt(program::ProgramData, name::String, value::Int) 
+    Program_Use(program)
+    glUniform1i(glGetUniformLocation(program.id, name), value)
+end
+
+function Program_SetFloat(program::ProgramData, name::String, value::Float32) 
+    Program_Use(program)
+    glUniform1f(glGetUniformLocation(program.id, name), value)
+end
+
+function Program_SetMat4(program::ProgramData, name::String, value) 
+    Program_Use(program)
+    glUniformMatrix4fv(glGetUniformLocation(program.id, name), 1, GL_FALSE, value)
+end
