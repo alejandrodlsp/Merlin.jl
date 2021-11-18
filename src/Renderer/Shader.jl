@@ -1,6 +1,3 @@
-using CSyntax
-using ModernGL
-
 @enum ShaderType SHADER_TYPE_FRAGMENT SHADER_TYPE_VERTEX
 
 struct ShaderData

@@ -73,7 +73,7 @@ function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
     global WINDOW_DATA = WindowData(nativeWindow)
 
     WindowInput_RegisterInputCallbacks(nativeWindow, eventCallback)
-    Window_SetIcon()
+    # Window_SetIcon() TODO: Fix texture to work
 
     
     WINDOW_DATA

@@ -1,9 +1,6 @@
 include("Event/Event.jl")
 include("Input.jl")
 
-import GLFW
-using ModernGL
-
 function WindowInput_OnKeyCallback(eventContext::Function, window::GLFW.Window, key::GLFW.Key, scancode::Cint, action::GLFW.Action, mods::Cint)
     if (action == GLFW.PRESS)
         eventContext(KeyEventData(EventTypeKeyPressed, Cint(key), Cint(0)))

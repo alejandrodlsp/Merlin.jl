@@ -1,11 +1,9 @@
-using Base:String
-using FileIO
-using ColorTypes
-using FixedPointNumbers
+using CSyntax
+using STBImage.LibSTBImage
 
 struct TextureResourceData <: ResourceData
     path::String
-    data::Matrix{ColorTypes.RGBA{FixedPointNumbers.N0f8}}
+    texture::TextureData
 end
 
 function TextureResource_Load(texture_path)::TextureResourceData
@@ -13,9 +11,22 @@ function TextureResource_Load(texture_path)::TextureResourceData
         return ResourcePool_GetElement(texture_path)::TextureResourceData
     end
 
-    data = load(texture_path)
-    texture_data = TextureResourceData(texture_path, data)
+    x, y, n = Cint(0), Cint(0), Cint(0)
+    force_channels = 4
+    stbi_set_flip_vertically_on_load(true)
+    tex_data = @c stbi_load(texture_path, &x, &y, &n, force_channels)
+    
+    if tex_data == C_NULL
+        @error "could not load texture from $texture_path."
+        return nothing
+    end
+
+    texture = Texture_Create(x, y, tex_data)
+    
+    texture_data = TextureResourceData(texture_path, texture)
     ResourcePool_Register(texture_path, texture_data)
+    
+    # stbi_image_free(tex_data)
     texture_data
 end
 

@@ -10,7 +10,7 @@ function ResourcePool_Get()::ResourcePoolData
     RESOURCE_POOL
 end
 
-function ResourcePool_Exists(resource_path::String)
+function ResourcePool_Exists(resource_path::String) 
     haskey(ResourcePool_Get().loaded_resources, resource_path)
 end
 
@@ -25,7 +25,7 @@ function ResourcePool_Register(resource_path::String, resource::ResourceData)
 end
 
 function ResourcePool_GetElement(resource_path::String)::ResourceData
-    if ResourcePool_Exists(resource_path)
+    if !ResourcePool_Exists(resource_path)
         @info "Tried to access resource in resource pool which did not exist: " resource_path " (" resource.type ")"
         return
     end

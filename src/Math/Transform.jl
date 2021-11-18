@@ -1,6 +1,7 @@
 using Printf
 
 mutable struct Transform
+    name::String
     position::Vector3{Float64}
     rotation::Vector3{Float64}
     scale::Vector3{Float64}
@@ -8,11 +9,12 @@ mutable struct Transform
     children
 end
 
-Transform(  position::Vector3{Float64}, 
+Transform(  position::Vector3{Float64}; 
             rotation::Vector3{Float64}=Vector3(0.0, 0.0, 0.0), 
             scale::Vector3{Float64}=Vector3(1.0, 1.0, 1.0),
-            parent::Transform=missing,
-            children::Vector{Transform}=missing) = Transform(position, rotation, scale, parent, children)
+            name::String="Transform",
+            parent=missing,
+            children=missing) = Transform(name, position, rotation, scale, parent, children)
 
 function SetParent(transform::Transform, parent::Transform)
     if !isnothing(transform.parent)

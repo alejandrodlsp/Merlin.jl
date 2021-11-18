@@ -1,27 +1,36 @@
+using ModernGL
+using CSyntax
+using ConfigEnv
+import GLFW
+
 include("Math/Math.jl")
 include("Renderer/Renderer.jl")
 include("Resource/Resource.jl")
 include("Logger.jl")
 include("Window.jl")
-
-using ModernGL
-using ConfigEnv
+include("Scene/SceneManager.jl")
 
 """
     
 """
 struct ApplicationParams
     window::WindowProps
+    onStart::Function
+    onShutdown::Function
     onEvent::Function
     onUpdate::Function
     onRender::Function
     ApplicationParams( ;
                         Window::WindowProps=WindowProps(),
+                        OnStart::Function=() -> (),
+                        OnShutdown::Function=() -> (),
                         OnEvent::Function=(e) -> (),
                         OnUpdate::Function=() -> (),
                         OnRender::Function=() -> (),
                         ) = new(
                           Window,
+                          OnStart,
+                          OnShutdown,
                           OnEvent,
                           OnUpdate,
                           OnRender
@@ -30,6 +39,8 @@ end
 
 struct ApplicationData
     loggerData::LoggerData
+    onStart::Function
+    onShutdown::Function
     onUpdate::Function
     onRender::Function
 end
@@ -50,17 +61,27 @@ function Application_Init(params::ApplicationParams)::ApplicationData
 
     Window_Init(params.window, params.onEvent)
 
-    global APPLICATION_DATA = ApplicationData(loggerData, params.onUpdate, params.onRender)
+    global APPLICATION_DATA = ApplicationData(loggerData, params.onStart, params.onShutdown, params.onUpdate, params.onRender)
 end
 
 function Application_Run()
-    glClearColor(0.1, 0.1, 0.1, 1.0)
+    glEnable(GL_DEPTH_TEST);  
+    glEnable(GL_BLEND);
+    glEnable(GL_ALPHA_TEST);
+    
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Application_Get().onStart()
 
     while !Application_ShouldClose()
-        Application_Get().onUpdate()
-
+        glClearColor(0.1, 0.1, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+      
+        Application_Get().onUpdate()
+        SceneManager_OnUpdate()
+
         Application_Get().onRender()
+        SceneManager_OnRender()
 
         Window_Update()
     end
@@ -69,6 +90,7 @@ function Application_Run()
 end
 
 function Application_Shutdown()
+    Application_Get().onShutdown()
     Window_Shutdown()
     Logger_Shutdown(Application_Get().loggerData)
     ResourcePool_Flush()
