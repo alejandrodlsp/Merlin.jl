@@ -1,16 +1,22 @@
 using Printf
+using CoordinateTransformations, Rotations, StaticArrays
+
+mutable struct Rotation
+    axis::Vector3{Float64}
+    theta::Float64
+end
 
 mutable struct Transform
     name::String
     position::Vector3{Float64}
-    rotation::Vector3{Float64}
+    rotation::Rotation
     scale::Vector3{Float64}
     parent
     children
 end
 
 Transform(  position::Vector3{Float64}; 
-            rotation::Vector3{Float64}=Vector3(0.0, 0.0, 0.0), 
+            rotation::Rotation=Rotation(Vector3(0.0, 0.0, 0.0), 0.0), 
             scale::Vector3{Float64}=Vector3(1.0, 1.0, 1.0),
             name::String="Transform",
             parent=missing,
@@ -26,10 +32,11 @@ function SetParent(transform::Transform, parent::Transform)
 end
 
 function GetModelMatrix(transform::Transform)
-    GLfloat[1.0 0.0 0.0 transform.position.x;
-                    0.0 1.0 0.0 transform.position.y;
-                    0.0 0.0 1.0 transform.position.z;
-                    0.0 0.0 0.0 1.0]
+    id = Identity()
+    scale = Scale(transform.scale)
+    translate = Translate(transform.position)
+    rot = Rotate(transform.rotation.axis, transform.rotation.theta)
+    id * scale * translate * rot
 end
 
 export Transform, SetParent, GetModelMatrix

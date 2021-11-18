@@ -7,6 +7,7 @@ end
 
 Vector2() = Vector2(0.0, 0.0)
 Vector2(t::Tuple) = Vector2(promote(t...)...)
+toArray(v::Vector2) = ([v.x, v.y]) 
 
 # Print vector
 Base.show(io::IO, a::Vector2) = @printf(io, "Vector2(%.4f, %.4f)", a.x, a.y)

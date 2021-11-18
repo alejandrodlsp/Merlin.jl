@@ -8,6 +8,7 @@ end
 
 Vector3() = Vector3(0.0, 0.0, 0.0)
 Vector3(t::Tuple) = VecE3(promote(t...)...)
+toArray(v::Vector3) = ([v.x, v.y, v.z]) 
 
 # Print vector
 Base.show(io::IO, a::Vector3) = @printf(io, "Vector3(%.4f, %.4f, %.4f)", a.x, a.y, a.z)

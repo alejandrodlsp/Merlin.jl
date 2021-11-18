@@ -28,5 +28,6 @@ remove!(array, item) = deleteat!(array, findall(x -> x == item, array))
 include("Vector2.jl")
 include("Vector3.jl")
 include("Transform.jl")
+include("Mat4.jl")
 
 export AbstractVector, lerp, invlerp, normsquared, normalize, scale, clamp, remove!
