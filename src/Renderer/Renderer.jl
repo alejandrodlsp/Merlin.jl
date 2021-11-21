@@ -1,8 +1,7 @@
 abstract type Renderable end
 
 # Abstract render function
-function Render(renderable::Renderable, transform::Transform) 
-end
+function Render(renderable::Renderable, transform::Transform) end
 
 include("Texture.jl")
 include("Shader.jl")

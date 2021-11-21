@@ -1,23 +1,23 @@
 struct WindowCloseEventData <: EventData
-    type::EventType
+  type::EventType
 
-    WindowCloseEventData() = new(EventTypeWindowClose)
+  WindowCloseEventData() = new(EventTypeWindowClose)
 end
 
 struct WindowSizeEventData <: EventData
-    type::EventType
-    sizex::Cint
-    sizey::Cint
+  type::EventType
+  sizex::Cint
+  sizey::Cint
 
-    WindowSizeEventData(sizex::Cint, sizey::Cint) = new(EventTypeWindowResize, sizex, sizey)
+  WindowSizeEventData(sizex::Cint, sizey::Cint) = new(EventTypeWindowResize, sizex, sizey)
 end
 
 struct WindowMovedEventData <: EventData
-    type::EventType
-    posx::Cint
-    posy::Cint
+  type::EventType
+  posx::Cint
+  posy::Cint
 
-    WindowMovedEventData(posx::Cint, posy::Cint) = new(EventTypeWindowMoved, posx, posy)
+  WindowMovedEventData(posx::Cint, posy::Cint) = new(EventTypeWindowMoved, posx, posy)
 end
 
 export WindowClose, WindowSizeEventData, WindowMovedEventData

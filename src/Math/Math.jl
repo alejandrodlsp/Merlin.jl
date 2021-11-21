@@ -13,9 +13,6 @@ invlerp(a::Real, b::Real, c::Real) = (c - a) / (b - a)
 # Normal squared an abstract vector
 normsquared(a::AbstractVector) = sum(x^2 for x in a)
 
-# Normalized vector
-normalize(a::AbstractVector, p::Real=2) = normalize(a, p)
-
 # Scale vector by factor
 scale(a::AbstractVector, b::Real) = b .* a
 
@@ -24,6 +21,9 @@ clamp(a::AbstractVector, low::Real, high::Real) = clamp.(a, low, high)
 
 # Remove x element from array
 remove!(array, item) = deleteat!(array, findall(x -> x == item, array))
+
+# Dot product for vectors
+dotV(a::AbstractVector, b::AbstractVector) = sum(a .* b)
 
 include("Vector2.jl")
 include("Vector3.jl")

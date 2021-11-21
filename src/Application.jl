@@ -14,90 +14,97 @@ include("Scene/SceneManager.jl")
     
 """
 struct ApplicationParams
-    window::WindowProps
-    onStart::Function
-    onShutdown::Function
-    onEvent::Function
-    onUpdate::Function
-    onRender::Function
-    ApplicationParams( ;
-                        Window::WindowProps=WindowProps(),
-                        OnStart::Function=() -> (),
-                        OnShutdown::Function=() -> (),
-                        OnEvent::Function=(e) -> (),
-                        OnUpdate::Function=() -> (),
-                        OnRender::Function=() -> (),
-                        ) = new(
-                          Window,
-                          OnStart,
-                          OnShutdown,
-                          OnEvent,
-                          OnUpdate,
-                          OnRender
-                        )
+  window::WindowProps
+  onStart::Function
+  onShutdown::Function
+  onEvent::Function
+  onUpdate::Function
+  onRender::Function
+  ApplicationParams(;
+    Window::WindowProps = WindowProps(),
+    OnStart::Function = () -> (),
+    OnShutdown::Function = () -> (),
+    OnEvent::Function = (e) -> (),
+    OnUpdate::Function = () -> (),
+    OnRender::Function = () -> ()
+  ) = new(
+    Window,
+    OnStart,
+    OnShutdown,
+    OnEvent,
+    OnUpdate,
+    OnRender
+  )
 end
 
 struct ApplicationData
-    loggerData::LoggerData
-    onStart::Function
-    onShutdown::Function
-    onUpdate::Function
-    onRender::Function
+  loggerData::LoggerData
+  onStart::Function
+  onShutdown::Function
+  onUpdate::Function
+  onRender::Function
 end
 
 # Define application data only if not already defined
-(@isdefined APPLICATION_DATA) || ( APPLICATION_DATA = nothing )
+(@isdefined APPLICATION_DATA) || (APPLICATION_DATA = nothing)
 
 function Application_Get()::ApplicationData
-    (@isdefined APPLICATION_DATA) ||  @error "Trying to access application when it is not defined"
-    APPLICATION_DATA
+  (@isdefined APPLICATION_DATA) || @error "Trying to access application when it is not defined"
+  APPLICATION_DATA
 end
 
 function Application_Init(params::ApplicationParams)::ApplicationData
-    dotenv()
+  dotenv()
 
-    loggerData = Logger_Init()
-    Resource_Init()
+  loggerData = Logger_Init()
+  Resource_Init()
 
-    Window_Init(params.window, params.onEvent)
+  Window_Init(params.window, params.onEvent)
 
-    global APPLICATION_DATA = ApplicationData(loggerData, params.onStart, params.onShutdown, params.onUpdate, params.onRender)
+  global APPLICATION_DATA = ApplicationData(loggerData, params.onStart, params.onShutdown, params.onUpdate, params.onRender)
 end
 
 function Application_Run()
-    glEnable(GL_DEPTH_TEST);  
-    glEnable(GL_BLEND);
-    glEnable(GL_ALPHA_TEST);
-    
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_DEPTH_TEST)
+  glEnable(GL_BLEND)
+  glEnable(GL_ALPHA_TEST)
+  glDepthFunc(GL_LESS)
 
-    Application_Get().onStart()
+  # enable cull face
+  glEnable(GL_CULL_FACE)
+  glCullFace(GL_BACK)
+  glFrontFace(GL_CW)
 
-    while !Application_ShouldClose()
-        glClearColor(0.1, 0.1, 0.1, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-      
-        Application_Get().onUpdate()
-        SceneManager_OnUpdate()
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        Application_Get().onRender()
-        SceneManager_OnRender()
+  Application_Get().onStart()
 
-        Window_Update()
-    end
-    
-    Application_Shutdown()
+  while !Application_ShouldClose()
+    glClearColor(0.1, 0.1, 0.1, 1.0)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    Application_Get().onUpdate()
+    SceneManager_OnUpdate()
+
+    Application_Get().onRender()
+    SceneManager_OnRender()
+
+    Window_Update()
+  end
+
+  Application_Shutdown()
+  "Merlin Engine"
 end
 
 function Application_Shutdown()
-    Application_Get().onShutdown()
-    Window_Shutdown()
-    Logger_Shutdown(Application_Get().loggerData)
-    ResourcePool_Flush()
+  Application_Get().onShutdown()
+  Window_Shutdown()
+  Logger_Shutdown(Application_Get().loggerData)
+  ResourcePool_Flush()
 end
 
 function Application_ShouldClose()
-    Window_ShouldClose()
+  Window_ShouldClose()
 end
 
 export Application_Init, Application_Run, Application_ShouldClose, Application_Shutdown, ApplicationParams, ApplicationData, Application_Get
