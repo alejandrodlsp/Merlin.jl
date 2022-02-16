@@ -70,7 +70,7 @@ end
 function Render(quad::QuadData, transform::Transform, scene)
   Program_Use(quad.program)
   Program_SetMat4(quad.program, "uModel", GetModelMatrix(transform))
-  Program_SetMat4(quad.program, "uView", ViewMatrix(scene.camera))
+  Program_SetMat4(quad.program, "uView", scene.camera.viewMatrix)
   Program_SetMat4(quad.program, "uProjection", ProjectionMatrix(scene.camera))
   Texture_Bind(quad.texture)
   glBindVertexArray(quad.vao)
