@@ -39,4 +39,8 @@ function GetModelMatrix(transform::Transform)
   id * scale * translate * rot
 end
 
-export Transform, Rotation, SetParent, GetModelMatrix
+function GetQuaternion(rotation::Rotation)
+  qrotation(Vector(rotation.axis), deg2rad(rotation.theta))
+end
+
+export Transform, Rotation, SetParent, GetModelMatrix, GetQuaternion

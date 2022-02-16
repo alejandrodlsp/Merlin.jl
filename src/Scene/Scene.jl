@@ -27,6 +27,7 @@ function Scene_OnUnload(scene::Scene)
 end
 
 function Scene_OnRender(scene::Scene)
+  Update!(scene.camera)
   for entity in scene.entities
     GameEntity_OnRender(entity::GameEntity)
   end

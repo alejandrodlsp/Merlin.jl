@@ -12,6 +12,10 @@ function GetCurrentScene()::Scene
   _MERLIN_CURRENT_SCENE
 end
 
+function GetCurrentCamera()::Camera
+  GetCurrentScene().camera
+end
+
 function IsActiveScene(scene::Scene)::Bool
   if (isnothing(_MERLIN_CURRENT_SCENE))
     return false
@@ -45,4 +49,4 @@ function SceneManager_OnUpdate()
   Scene_OnUpdate(GetCurrentScene())
 end
 
-export GetCurrentScene, GetScene, LoadScene
+export GetCurrentScene, GetCurrentCamera, GetScene, LoadScene

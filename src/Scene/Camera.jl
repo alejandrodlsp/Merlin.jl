@@ -1,4 +1,7 @@
-using Base: Float64
+using Quaternions
+using LinearAlgebra
+using StaticArrays
+
 abstract type Camera end
 
 mutable struct PerspectiveCamera <: Camera
@@ -6,38 +9,40 @@ mutable struct PerspectiveCamera <: Camera
   rotation::Rotation
 
   fov::Float64
-  nearPlane::Float64
-  farPlane::Float64
+  near::Float64
+  far::Float64
+
+  forward::Vector3{Float64}
+  right::Vector3{Float64}
+  up::Vector3{Float64}
+
+  viewMatrix::Matrix{GLfloat}
+  quaternion::Quaternion{Float64}
 
   PerspectiveCamera(; Position::Vector3{Float64} = Vector3{Float64}(0.0, 0.0, 0.0), Rotation::Rotation = Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0),
-    Fov::Float64 = 70.0, NearPlane::Float64 = 0.1, FarPlane::Float64 = 100.0) = new(Position, Rotation, Fov, NearPlane, FarPlane)
+    Fov::Float64 = 70.0, Near::Float64 = 0.1, Far::Float64 = 100.0) =
+    new(Position, Rotation, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), Matrix(I, 4, 4), qrotation([Rotation.axis.x, Rotation.axis.y, Rotation.axis.z], Rotation.theta))
 end
 
-mutable struct OrthographicCamera <: Camera
-  position::Vector3{Float64}
-  rotation::Rotation
+function Update!(camera::Camera)
+  translation = Translate(camera.position)
 
-  left::Float64
-  right::Float64
-  top::Float64
-  bottom::Float64
-  far::Float64
-  near::Float64
-end
+  camera.quaternion = qrotation([camera.rotation.axis.x, camera.rotation.axis.y, camera.rotation.axis.z], deg2rad(camera.rotation.theta))
+  rotationMatrix = rotationmatrix(camera.quaternion)
+  rotation = convert(Matrix{GLfloat}, vcat([rotationMatrix [0; 0; 0]], SMatrix{1,4,GLfloat,4}(0, 0, 0, 1)))
 
-function ViewMatrix(camera::Camera)
-  rot = Rotate(camera.rotation.axis, camera.rotation.theta)
-  trans = Translate(camera.position)
-  rot * trans
+  camera.forward = rotationMatrix * Vector3_Forward()
+  camera.right = rotationMatrix * Vector3_Right()
+  camera.up = rotationMatrix * Vector3_Up()
+
+  camera.viewMatrix = rotation * translation
 end
 
 function ProjectionMatrix(camera::Camera)
   if camera isa PerspectiveCamera
     PerspectiveProjectionMatrix(camera)
-  elseif camera isa OrthographicCamera
-    OrtographicProjectionMatrix(camera)
   else
-    @error "Invalid camera type! Camera must be either ortographic camera or perspective camera"
+    @error "Invalid camera type! Camera must be a perspective camera"
   end
 end
 
@@ -45,11 +50,11 @@ function PerspectiveProjectionMatrix(camera::PerspectiveCamera)
   fov = deg2rad(camera.fov)
   width, height = GLFW.GetFramebufferSize(Window_Get().NativeWindow)
   aspect_ratio = width / height
-  range = tan(0.5 * fov) * camera.nearPlane
-  Sx = 2.0 * camera.nearPlane / (range * aspect_ratio + range * aspect_ratio)
-  Sy = camera.nearPlane / range
-  Sz = -(camera.farPlane + camera.nearPlane) / (camera.farPlane - camera.nearPlane)
-  Pz = -(2.0 * camera.farPlane * camera.nearPlane) / (camera.farPlane - camera.nearPlane)
+  range = tan(0.5 * fov) * camera.near
+  Sx = 2.0 * camera.near / (range * aspect_ratio + range * aspect_ratio)
+  Sy = camera.near / range
+  Sz = -(camera.far + camera.near) / (camera.far - camera.near)
+  Pz = -(2.0 * camera.far * camera.near) / (camera.far - camera.near)
 
   GLfloat[Sx 0.0 0.0 0.0
     0.0 Sy 0.0 0.0
@@ -57,13 +62,8 @@ function PerspectiveProjectionMatrix(camera::PerspectiveCamera)
     0.0 0.0 -1.0 0.0]
 end
 
-function OrtographicProjectionMatrix(camera::OrthographicCamera)
-  [
-    (2.0/(camera.right-camera.left)) 0 0 (-((camera.right + camera.left) / (camera.right - camera.left)))
-    0 (2.0/(camera.top-camera.bottom)) 0 (-((camera.top + camera.bottom) / (camera.top - camera.bottom)))
-    0 0 (2.0/(camera.far-camera.near)) (-((camera.far + camera.near) / (camera.far - camera.near)))
-    0 0 0 1.0
-  ]
+function setposition!(camera::Camera, x::Vector3{Float64})
+  camera.position = x
 end
 
-export Camera, PerspectiveCamera, OrthographicCamera
+export Camera, PerspectiveCamera, rotate!
