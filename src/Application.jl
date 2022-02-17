@@ -2,6 +2,8 @@ using ModernGL
 using CSyntax
 using ConfigEnv
 import GLFW
+import DataStructures
+import JSON
 
 include("Math/Math.jl")
 include("Renderer/Renderer.jl")

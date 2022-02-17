@@ -1,6 +1,7 @@
 include("Camera.jl")
 include("GameEntity.jl")
 include("Scene.jl")
+include("SceneLoader.jl")
 
 # Define current scene only if not already defined
 (@isdefined _MERLIN_CURRENT_SCENE) || (_MERLIN_CURRENT_SCENE = nothing)

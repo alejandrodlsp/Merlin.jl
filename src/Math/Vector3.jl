@@ -37,3 +37,4 @@ function lerp(a::Vector3, b::Vector3, t::Real)
 end
 
 export Vector3, distance2, distance, lerp, toArray
+
