@@ -6,7 +6,6 @@ abstract type Camera end
 
 mutable struct PerspectiveCamera <: Camera
   position::Vector3{Float64}
-  rotation::Rotation
 
   fov::Float64
   near::Float64
@@ -17,36 +16,48 @@ mutable struct PerspectiveCamera <: Camera
   up::Vector3{Float64}
 
   viewMatrix::Matrix{GLfloat}
+  rotationMatrix::Matrix{GLfloat}
+  projectionMatrix::Matrix{GLfloat}
   quaternion::Quaternion{Float64}
 
-  PerspectiveCamera(; Position::Vector3{Float64} = Vector3{Float64}(0.0, 0.0, 0.0), Rotation::Rotation = Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0),
-    Fov::Float64 = 70.0, Near::Float64 = 0.1, Far::Float64 = 100.0) =
-    new(Position, Rotation, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), Matrix(I, 4, 4), qrotation([Rotation.axis.x, Rotation.axis.y, Rotation.axis.z], Rotation.theta))
+  PerspectiveCamera(;
+    Position::Vector3{Float64} = Vector3{Float64}(0.0, 0.0, 0.0),
+    Rotation::Rotation = Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0),
+    Fov::Float64 = 70.0, Near::Float64 = 0.1, Far::Float64 = 100.0,
+    RotationMatrix = Matrix(I, 3, 3), ProjectionMatrix = Matrix(I, 4, 4), ViewMatrix = Matrix(I, 4, 4)) =
+    CreateCamera(new(Position, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), ViewMatrix, RotationMatrix, ProjectionMatrix, GetQuaternion(Rotation)))
+end
+
+function CreateCamera(camera::Camera)::Camera
+  CalculatePerspectiveProjectionMatrix!(camera)
+  CalculateRotationMatrix(camera, camera.quaternion)
+  Update!(camera)
+  camera
 end
 
 function Update!(camera::Camera)
   translation = Translate(camera.position)
 
-  camera.quaternion = qrotation([camera.rotation.axis.x, camera.rotation.axis.y, camera.rotation.axis.z], deg2rad(camera.rotation.theta))
-  rotationMatrix = rotationmatrix(camera.quaternion)
-  rotation = convert(Matrix{GLfloat}, vcat([rotationMatrix [0; 0; 0]], SMatrix{1,4,GLfloat,4}(0, 0, 0, 1)))
-
-  camera.forward = rotationMatrix * Vector3_Forward()
-  camera.right = rotationMatrix * Vector3_Right()
-  camera.up = rotationMatrix * Vector3_Up()
+  CalculateRotationMatrix(camera, camera.quaternion)
+  rotation = convert(Matrix{GLfloat}, vcat([camera.rotationMatrix [0; 0; 0]], SMatrix{1,4,GLfloat,4}(0, 0, 0, 1)))
 
   camera.viewMatrix = rotation * translation
 end
 
-function ProjectionMatrix(camera::Camera)
-  if camera isa PerspectiveCamera
-    PerspectiveProjectionMatrix(camera)
-  else
-    @error "Invalid camera type! Camera must be a perspective camera"
-  end
+function CalculateViewMatrix(camera::Camera)
+  camera.viewMatrix = inv(vcat([camera.rotationMatrix camera.position], SMatrix{1,4,GLfloat,4}(0, 0, 0, 1)))
 end
 
-function PerspectiveProjectionMatrix(camera::PerspectiveCamera)
+function CalculateRotationMatrix(camera::Camera, x::Quaternion, fwd = [0, 0, -1], rgt = [1, 0, 0], up = [0, 1, 0])
+  camera.quaternion = x
+  camera.rotationMatrix = rotationmatrix(camera.quaternion)
+  camera.forward = camera.rotationMatrix * fwd
+  camera.right = camera.rotationMatrix * rgt
+  camera.up = camera.rotationMatrix * up
+  return camera.rotationMatrix
+end
+
+function CalculatePerspectiveProjectionMatrix!(camera::PerspectiveCamera)
   fov = deg2rad(camera.fov)
   width, height = GLFW.GetFramebufferSize(Window_Get().NativeWindow)
   aspect_ratio = width / height
@@ -56,14 +67,33 @@ function PerspectiveProjectionMatrix(camera::PerspectiveCamera)
   Sz = -(camera.far + camera.near) / (camera.far - camera.near)
   Pz = -(2.0 * camera.far * camera.near) / (camera.far - camera.near)
 
-  GLfloat[Sx 0.0 0.0 0.0
+  camera.projectionMatrix = GLfloat[Sx 0.0 0.0 0.0
     0.0 Sy 0.0 0.0
     0.0 0.0 Sz Pz
     0.0 0.0 -1.0 0.0]
+end
+
+function setrotation!(camera::Camera, rotation::Rotation)
+  quaternion = GetQuaternion(rotation)
+  CalculateRotationMatrix(camera, quaternion)
+end
+
+function rotate!(camera::Camera, rotation::Rotation)
+  quaternion = GetQuaternion(rotation) * camera.quaternion    # incrementally update quaternion
+  CalculateRotationMatrix(camera, quaternion)
 end
 
 function setposition!(camera::Camera, x::Vector3{Float64})
   camera.position = x
 end
 
-export Camera, PerspectiveCamera, rotate!
+function move!(camera::Camera, pos::Vector3{Float64})
+  camera.position = camera.position + pos
+end
+
+function reset!(camera::Camera)
+  setposition!(camera, Vector3{Float64}(0, 0, 0))
+  setrotation!(camera, Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0))
+end
+
+export Camera, PerspectiveCamera, setrotation!, rotate!, setposition!, move!, reset!

@@ -37,4 +37,4 @@ function rot(a::Vector2, θ::Vector2)
   VecE2(a.x * c - a.y * s, a.x * s + a.y * c)
 end
 
-export Vector3, distance2, distance, lerp, rot, toArray
+export Vector2, distance2, distance, lerp, rot, toArray

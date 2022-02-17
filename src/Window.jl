@@ -75,6 +75,7 @@ function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
   WindowInput_RegisterInputCallbacks(nativeWindow, eventCallback)
   # Window_SetIcon() TODO: Fix texture to work
 
+  GLFW.SetInputMode(nativeWindow, GLFW.CURSOR, GLFW.CURSOR_DISABLED)
 
   WINDOW_DATA
 end
