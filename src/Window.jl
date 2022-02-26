@@ -1,14 +1,15 @@
 include("WindowInput.jl")
 
-import GLFW, ModernGL
-import Base: String, UInt
-using FileIO
-
 struct WindowException <: Exception
   var::String
 end
 
-struct WindowProps
+"""
+    WindowParams
+
+Initializer parameters for a window component.
+"""
+struct WindowParams
   windowSize::Vector2{Int}
   maxWindowSize::Vector2{Int}
   minWindowSize::Vector2{Int}
@@ -16,14 +17,19 @@ struct WindowProps
   name::String
 end
 
-WindowProps(; WindowSize::Vector2{Int} = Vector2(800, 800),
+WindowParams(; WindowSize::Vector2{Int} = Vector2(800, 800),
   MaxWindowSize::Vector2{Int} = Vector2(0, 0),
   MinWindowSize::Vector2{Int} = Vector2(0, 0),
   Fullscreen::Bool = false,
-  Name::String = "Merlin Engine application") = WindowProps(
+  Name::String = "Merlin Engine application") = WindowParams(
   WindowSize, MaxWindowSize, MinWindowSize, Fullscreen, Name
 )
 
+"""
+    WindowData
+
+Current window state.
+"""
 struct WindowData
   NativeWindow::GLFW.Window
 end
@@ -31,16 +37,50 @@ end
 # Define window data only if not already defined
 (@isdefined WINDOW_DATA) || (WINDOW_DATA = nothing)
 
+"""
+    Window_Get()::WindowData
+
+Return current window state data.
+
+Window data is a singleton, given there can only be one window instance per application.
+"""
 function Window_Get()::WindowData
   (@isdefined WINDOW_DATA) || @error "Trying to access window when it is not defined"
   WINDOW_DATA
 end
 
+"""
+    Window_GetNative()::GLFW.Window
+
+Return current GLFW native window component.
+"""
 function Window_GetNative()::GLFW.Window
   Window_Get().NativeWindow
 end
 
-function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
+"""
+    Window_Init(props::WindowParams, eventCallback::Function)::WindowData
+
+Initialize window context given window properties.
+
+Return window state data
+
+# Arguments
+- `props::WindowParams`: Initializer parameters for window state.
+- `eventCallback::Function`: Callback function for events triggered in window context.
+
+# Examples
+```julia-repl
+function on_event(event)
+  ...
+end
+
+window::WindowData = Window_Init(WindowProps(), on_event)
+```
+
+See also [`WindowParams`](@ref), [`WindowData`](@ref).
+"""
+function Window_Init(props::WindowParams, eventCallback::Function)::WindowData
   nativeWindow = C_NULL
   @debug "Initializating window context"
   GLFW.Init() != true && thrown(WindowException("Failed to initialize GLFW"))
@@ -75,7 +115,7 @@ function Window_Init(props::WindowProps, eventCallback::Function)::WindowData
   WindowInput_RegisterInputCallbacks(nativeWindow, eventCallback)
   # Window_SetIcon() TODO: Fix texture to work
 
-  GLFW.SetInputMode(nativeWindow, GLFW.CURSOR, GLFW.CURSOR_DISABLED)
+  SetCursorMode(GLFW.CURSOR_DISABLED)
 
   WINDOW_DATA
 end
@@ -94,6 +134,28 @@ function Window_ShouldClose()::Bool
   GLFW.WindowShouldClose(Window_GetNative())
 end
 
+"""
+    Window_Init(props::WindowParams, eventCallback::Function)::WindowData
+
+Initialize window context given window properties.
+
+Return window state data
+
+# Arguments
+- `props::WindowParams`: Initializer parameters for window state.
+- `eventCallback::Function`: Callback function for events triggered in window context.
+
+# Examples
+```julia-repl
+function on_event(event)
+  ...
+end
+
+window::WindowData = Window_Init(WindowProps(), on_event)
+```
+
+See also [`WindowParams`](@ref), [`WindowData`](@ref).
+"""
 function Window_SetIcon()
   @assert haskey(ENV, "MERLIN_RESOURCES_FOLDER_PATH") "Did not load window icon, resources folder not defined. Try setting ENV[MERLIN_RESOURCES_FOLDER_PATH]"
 
@@ -107,9 +169,22 @@ function Window_SetIcon()
   GLFW.PollEvents()
 end
 
+"""
+    SetCursorMode(mode::UInt32)
+
+Sets window cursor mode.
+
+Uses GLFW's cursor modes as Uint32 values. Cursor types: [ GLFW.CURSOR_DISABLED, GLFW.CURSOR_HIDDEN, GLFW.CURSOR_NORMAL ]
+
+# Examples
+```julia-repl
+SetCursorMode(GLFW.CURSOR_HIDDEN) # Hides window's cursor
+```
+"""
 function SetCursorMode(mode::UInt32)
   @debug "Window cursor mode changed to: " mode
   GLFW.SetInputMode(Window_GetNative(), GLFW.CURSOR, mode)
+  GLFW.CURS
 end
 
-export WindowException, WindowProps, Window_SetIcon, SetCursorMode, Window_Get, Window_GetNative
+export WindowException, WindowParams, Window_SetIcon, SetCursorMode, Window_Get, Window_GetNative

@@ -1,5 +1,5 @@
 include("Event/Event.jl")
-include("Input.jl")
+include("Input/Input.jl")
 
 function WindowInput_OnKeyCallback(eventContext::Function, window::GLFW.Window, key::GLFW.Key, scancode::Cint, action::GLFW.Action, mods::Cint)
   if (action == GLFW.PRESS)

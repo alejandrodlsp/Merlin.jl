@@ -2,8 +2,29 @@ using Quaternions
 using LinearAlgebra
 using StaticArrays
 
+"""
+  Camera
+
+Base camera class.
+
+See also [`PerspectiveCamera`](@ref).
+"""
 abstract type Camera end
 
+"""
+    PerspectiveCamera::Camera
+
+Data structure for a camera using a perspective projection.
+
+# Arguments
+- `Position::Vector3`: Initial position of camera in world space for calculating view matrix.
+- `Rotation::Rotation`: Initial rotation of camera in world space for calculating view matrix
+- `Fov::Float64`: Fov angle in degrees for projection matrix.
+- `Near::Float64`: Near plane distance for projection matrix.
+- `Far::Float64`: Far plane distance for projection matrix.
+
+See also [`Camera`](@ref).
+"""
 mutable struct PerspectiveCamera <: Camera
   position::Vector3{Float64}
 
@@ -28,9 +49,65 @@ mutable struct PerspectiveCamera <: Camera
     CreateCamera(new(Position, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), ViewMatrix, RotationMatrix, ProjectionMatrix, GetQuaternion(Rotation)))
 end
 
+"""
+    setrotation!(Camera, rotation::Rotation)
+
+Force sets rotation of camera object and updates camera view matrix.
+
+See also [`rotate!`](@ref).
+"""
+function setrotation!(camera::Camera, rotation::Rotation)
+  quaternion = GetQuaternion(rotation)
+  CalculateRotationMatrix(camera, quaternion)
+end
+
+"""
+    rotate!(Camera, delta::Rotation)
+
+Apply rotation to camera object rotation by delta rotation.
+
+See also [`setrotation!`](@ref).
+"""
+function rotate!(camera::Camera, rotation::Rotation)
+  quaternion = GetQuaternion(rotation) * camera.quaternion    # incrementally update quaternion
+  CalculateRotationMatrix(camera, quaternion)
+end
+
+"""
+    setposition!(Camera, position::Vector3)
+
+Force sets position of camera object and updates camera view matrix.
+
+See also [`move!`](@ref).
+"""
+function setposition!(camera::Camera, x::Vector3{Float64})
+  camera.position = x
+end
+
+"""
+    move!(Camera, delta::Vector3)
+
+Apply translation to camera object, moves by delta move vector.
+
+See also [`setposition!`](@ref).
+"""
+function move!(camera::Camera, pos::Vector3{Float64})
+  camera.position = camera.position + pos
+end
+
+"""
+    reset!(Camera)
+
+Resets camera position and rotation to zero values and re calculates view matrix.
+"""
+function reset!(camera::Camera)
+  setposition!(camera, Vector3{Float64}(0, 0, 0))
+  setrotation!(camera, Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0))
+end
+
 function CreateCamera(camera::Camera)::Camera
   CalculatePerspectiveProjectionMatrix!(camera)
-  CalculateRotationMatrix(camera, camera.quaternion)
+  setrotation!(camera, camera.rotation)
   Update!(camera)
   camera
 end
@@ -71,29 +148,6 @@ function CalculatePerspectiveProjectionMatrix!(camera::PerspectiveCamera)
     0.0 Sy 0.0 0.0
     0.0 0.0 Sz Pz
     0.0 0.0 -1.0 0.0]
-end
-
-function setrotation!(camera::Camera, rotation::Rotation)
-  quaternion = GetQuaternion(rotation)
-  CalculateRotationMatrix(camera, quaternion)
-end
-
-function rotate!(camera::Camera, rotation::Rotation)
-  quaternion = GetQuaternion(rotation) * camera.quaternion    # incrementally update quaternion
-  CalculateRotationMatrix(camera, quaternion)
-end
-
-function setposition!(camera::Camera, x::Vector3{Float64})
-  camera.position = x
-end
-
-function move!(camera::Camera, pos::Vector3{Float64})
-  camera.position = camera.position + pos
-end
-
-function reset!(camera::Camera)
-  setposition!(camera, Vector3{Float64}(0, 0, 0))
-  setrotation!(camera, Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0))
 end
 
 export Camera, PerspectiveCamera, setrotation!, rotate!, setposition!, move!, reset!

@@ -1,5 +1,10 @@
 abstract type Component end
 
+struct ComponentReference
+  file::String
+  constructor::String  
+end
+
 mutable struct BaseComponent <: Component
   entity
   data

@@ -1,8 +1,6 @@
 include("Serializer.jl")
 include("Parser.jl")
 
-const EntityArray{T<:Transform} = Vector{T}
-
 function LoadScene(scene_path::String)#todo return scene
   scene_resource = SceneResource_Load(scene_path)
   LoadScene(scene_resource)
