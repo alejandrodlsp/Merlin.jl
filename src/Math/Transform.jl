@@ -36,7 +36,7 @@ function GetModelMatrix(transform::Transform)
   scale = Scale(transform.scale)
   translate = Translate(transform.position)
   rot = Rotate(transform.rotation.axis, transform.rotation.theta)
-  id * scale * translate * rot
+  id * translate * rot * scale
 end
 
 function GetQuaternion(rotation::Rotation)

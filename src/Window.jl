@@ -75,7 +75,7 @@ function on_event(event)
   ...
 end
 
-window::WindowData = Window_Init(WindowProps(), on_event)
+window::WindowData = Window_Init(WindowParams(), on_event)
 ```
 
 See also [`WindowParams`](@ref), [`WindowData`](@ref).
@@ -184,7 +184,6 @@ SetCursorMode(GLFW.CURSOR_HIDDEN) # Hides window's cursor
 function SetCursorMode(mode::UInt32)
   @debug "Window cursor mode changed to: " mode
   GLFW.SetInputMode(Window_GetNative(), GLFW.CURSOR, mode)
-  GLFW.CURS
 end
 
 export WindowException, WindowParams, Window_SetIcon, SetCursorMode, Window_Get, Window_GetNative

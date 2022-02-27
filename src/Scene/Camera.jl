@@ -27,6 +27,7 @@ See also [`Camera`](@ref).
 """
 mutable struct PerspectiveCamera <: Camera
   position::Vector3{Float64}
+  rotation::Rotation
 
   fov::Float64
   near::Float64
@@ -46,7 +47,21 @@ mutable struct PerspectiveCamera <: Camera
     Rotation::Rotation = Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0),
     Fov::Float64 = 70.0, Near::Float64 = 0.1, Far::Float64 = 100.0,
     RotationMatrix = Matrix(I, 3, 3), ProjectionMatrix = Matrix(I, 4, 4), ViewMatrix = Matrix(I, 4, 4)) =
-    CreateCamera(new(Position, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), ViewMatrix, RotationMatrix, ProjectionMatrix, GetQuaternion(Rotation)))
+    CreateCamera(new(Position, Rotation, Fov, Near, Far, Vector3{Float64}(0.0, 0.0, -1.0), Vector3{Float64}(1.0, 0.0, 0.0), Vector3{Float64}(0.0, 1.0, 0.0), ViewMatrix, RotationMatrix, ProjectionMatrix, GetQuaternion(Rotation)))
+end
+
+"""
+    CreateCamera(Camera)
+
+Initializes a camera.
+
+See also [`PerspectiveCamera`](@ref).
+"""
+function CreateCamera(camera::Camera)::Camera
+  CalculatePerspectiveProjectionMatrix!(camera)
+  setrotation!(camera, camera.rotation)
+  Update!(camera)
+  camera
 end
 
 """
@@ -103,13 +118,6 @@ Resets camera position and rotation to zero values and re calculates view matrix
 function reset!(camera::Camera)
   setposition!(camera, Vector3{Float64}(0, 0, 0))
   setrotation!(camera, Rotation(Vector3{Float64}(0.0, 0.0, 0.0), 0.0))
-end
-
-function CreateCamera(camera::Camera)::Camera
-  CalculatePerspectiveProjectionMatrix!(camera)
-  setrotation!(camera, camera.rotation)
-  Update!(camera)
-  camera
 end
 
 function Update!(camera::Camera)

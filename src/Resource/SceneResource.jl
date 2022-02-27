@@ -8,7 +8,7 @@ function SceneResource_Load(scene_path::AbstractString)::SceneResourceData
     return ResourcePool_GetElement(scene_path)::SceneResourceData
   end
 
-  content = JSON.parsefile(scene_path; dicttype = DataStructures.OrderedDict, inttype = Int64, use_mmap = true)
+  content = JSON.parsefile(scene_path; inttype = Int64, use_mmap = true) # dicttype = DataStructures.OrderedDict
 
   scene_data = SceneResourceData(scene_path, content)
   ResourcePool_Register(scene_path, scene_data)

@@ -1,7 +1,7 @@
-function ParseEntities(entities_dict)::Vector{Transform}
-  entities = Vector{Transform}(undef, 0)
+function ParseEntities(entities_dict)::Vector{GameEntity}
+  entities = Vector{GameEntity}(undef, 0)
 
-  for (key, entity) in enumerate(entities_dict)
+  for entity in entities_dict
     e = ParseEntity(entity)
     push!(entities, e)
   end
@@ -9,16 +9,38 @@ function ParseEntities(entities_dict)::Vector{Transform}
   entities
 end
 
+function ParseCamera(camera_dict)::PerspectiveCamera
+  rotation_dict = get(camera_dict, "rotation", nothing)
+  if !isnothing(rotation_dict)
+    rotation_dict = ParseRotation(rotation_dict)
+  end
+
+  position_dict = get(camera_dict, "position", nothing)
+  if !isnothing(position_dict)
+    position_dict = Vector3{Float64}(camera_dict["position"])
+  end
+
+  params = Dict(:Position => position_dict,
+    :Rotation => rotation_dict,
+    :Fov => get(camera_dict, "fov", nothing),
+    :Near => get(camera_dict, "near", nothing),
+    :Far => get(camera_dict, "far", nothing))
+
+  filter!(p -> (!isnothing(last(p))), params)
+  camera = PerspectiveCamera(; params...)
+  CreateCamera(camera)
+end
+
 function ParseEntity(entity_dict)::GameEntity
-  @assert haskey(entity_dict, "transform") "Reading scene: Transform must be an argument of a entity component."
-  @assert haskey(entity_dict, "renderable") "Reading scene: Transform must be an argument of a entity component."
+  haskey(entity_dict, "transform") || @error "Reading scene: Transform must be an argument of a entity component."
+  haskey(entity_dict, "renderable") || @error "Reading scene: Transform must be an argument of a entity component."
 
   transform = ParseTransform(entity_dict["transform"])
   renderable = ParseRenderable(entity_dict["renderable"])
 
   if haskey(entity_dict, "components")
-    components = []
-    for (index, component) in enumerate(entity_dict.components)
+    components = ComponentArray{BaseComponent}(undef, 0)
+    for component in entity_dict["components"]
       push!(components, ParseComponent(component))
     end
     return GameEntity(renderable, transform = transform, components = components)
@@ -28,35 +50,32 @@ function ParseEntity(entity_dict)::GameEntity
 end
 
 function ParseComponent(component_dict)::BaseComponent
-  @assert haskey(component_dict, "file") "Reading scene: File must be an argument of a component."
-  @assert haskey(component_dict, "data") "Reading scene: Data must be an argument of a component."
-  
+  haskey(component_dict, "file") || @error "Reading scene: File must be an argument of a component."
+  haskey(component_dict, "data") || @error "Reading scene: Data must be an argument of a component."
+
   component_file = split(component_dict["file"], "/")[end] # Get filename
-  component_name = split(component_file, ".")[0]   # Remove file extension
+  component_name = split(component_file, ".")[1]   # Remove file extension
   component_symbol = Symbol(component_name) # Get module symbol
 
-  if !isdefined(Main, component_symbol)  # If symbol is not defined import module
-    include(component_file)
-    @debug "Loading module..."
-  end
+  isdefined(Main, component_symbol) || @error "Reading scene components: You must include component files."
 
-  @assert isdefined(component_symbol, :initialize) "Trying to load component without initialize function"
-
-  component_symbol.initialize(component_dict["data"])
+  getfield(Main, component_symbol)(component_dict["data"])
 end
 
-function ParseRenderable(renderable_dict)::Renderable 
-  @assert haskey(renderable_dict, "type") "Reading scene: Transform must be an argument of a renderable component."
+function ParseRenderable(renderable_dict)::Renderable
+  haskey(renderable_dict, "type") || @error "Reading scene: Transform must be an argument of a renderable component."
 
-  if renderable_dict["type"] == "Quad"
-    @assert haskey(renderable_dict, "texture") "Reading scene: Texture path must be an argument of a quad renderer component."
-    
-    return Quad(TextureResource_Load(renderable_dict["texture"]))
+  if renderable_dict["type"] == "quad"
+    haskey(renderable_dict, "texture") || @error "Reading scene: Texture path must be an argument of a quad renderer component."
+
+    return Quad(TextureResource_Load(renderable_dict["texture"]).texture)
+  else
+    @error "Reading scene: renderable type not found"
   end
 end
 
 function ParseTransform(transform_dict)::Transform
-  @assert haskey(transform_dict, "position") "Reading scene: Position must be an argument of a transform component."
+  haskey(transform_dict, "position") || @error "Reading scene: Position must be an argument of a transform component."
 
   position = Vector3{Float64}(transform_dict["position"])
   transform = Transform(position)
@@ -75,10 +94,8 @@ function ParseTransform(transform_dict)::Transform
 end
 
 function ParseRotation(rotation_dict)::Rotation
-  @assert haskey(rotation_dict, "axis") "Reading scene: Axis must be an argument of a rotation component."
-  @assert haskey(rotation_dict, "theta") "Reading scene: Theta must be an argument of a rotation component."
+  haskey(rotation_dict, "axis") || @error "Reading scene: Axis must be an argument of a rotation component."
+  haskey(rotation_dict, "theta") || @error "Reading scene: Theta must be an argument of a rotation component."
 
   Rotation(Vector3{Float64}(rotation_dict["axis"]), rotation_dict["theta"])
 end
-
-export ParseEntity, ParseRenderable, ParseTransform, ParseRotation

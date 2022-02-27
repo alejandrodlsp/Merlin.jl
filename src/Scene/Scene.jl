@@ -12,8 +12,12 @@ mutable struct Scene
   name::String
   camera::Camera
   entities::Vector{GameEntity}
+end
 
-  Scene(name::String, camera::Camera; entities::Vector{GameEntity} = Vector{GameEntity}()) = CreateScene(new(name, entities, camera))
+function CreateScene(name::String, camera::Camera, entities::Vector{GameEntity} = Vector{GameEntity}())::Scene
+  scene = Scene(name, camera, entities)
+  push!(_MERLIN_SCENE_REGISTRY, scene)
+  scene
 end
 
 """
@@ -46,12 +50,6 @@ function Destroy(scene::Scene, game_entity::GameEntity)
   GameEntity_OnDestroy(game_entity)
 end
 
-function CreateScene(scene::Scene)::Scene
-  @assert !GetScene(name) "Trying to create a scene when another scene exists with the same name"
-  push!(_MERLIN_SCENE_REGISTRY, scene)
-  scene
-end
-
 function Scene_OnLoad(scene::Scene)
   for entity in scene.entities
     GameEntity_OnCreate(entity::GameEntity)
@@ -77,4 +75,4 @@ function Scene_OnUpdate(scene::Scene)
   end
 end
 
-export Scene, Instantiate, Destroy
+export Scene, CreateScene, Instantiate, Destroy

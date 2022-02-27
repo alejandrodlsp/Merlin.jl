@@ -17,7 +17,7 @@ function Serialize(t::Transform)
   end
   if !ismissing(t.children) && size(t.children) > 0
     v * "\"children\": ["
-    for (index, child) in enumerate(t.children)
+    for (index, child) in t.children
       v * Serialize(child) * ", "
     end
     v * "]"
