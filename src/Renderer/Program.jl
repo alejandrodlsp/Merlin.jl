@@ -1,3 +1,5 @@
+include("Shader.jl")
+
 struct ProgramData
   id::GLuint
 end

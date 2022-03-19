@@ -1,5 +1,7 @@
 using Base: String
 
+include("../Renderer/Program.jl")
+
 struct ProgramResourceData <: ResourceData
   path::String
   source::String

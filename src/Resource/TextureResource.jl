@@ -1,5 +1,6 @@
-using CSyntax
 using STBImage.LibSTBImage
+
+include("../Renderer/Texture.jl")
 
 struct TextureResourceData <: ResourceData
   path::String

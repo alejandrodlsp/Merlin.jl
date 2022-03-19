@@ -23,9 +23,9 @@ tex_coords = GLfloat[1.0, 1.0,
 indices = GLuint[0, 1, 3,    # first triangle
   1, 2, 3]    # second triangle
 
-function Quad(texture::TextureData)
+function Quad(texture::TextureData, shader_path::String)
   :QuadData
-  program = ProgramResource_Load(Program_DefaultProgramPath()).program
+  program = ProgramResource_Load(shader_path).program
 
   # create buffers located in the memory of graphic card
   vbo = GLuint(0)

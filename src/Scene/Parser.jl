@@ -63,12 +63,15 @@ function ParseComponent(component_dict)::BaseComponent
 end
 
 function ParseRenderable(renderable_dict)::Renderable
-  haskey(renderable_dict, "type") || @error "Reading scene: Transform must be an argument of a renderable component."
+  haskey(renderable_dict, "type") || @error "Reading scene: Type must be an argument of a renderable component."
+  haskey(renderable_dict, "program") || @error "Reading scene: Program path must be an argument of a renderable component."
 
   if renderable_dict["type"] == "quad"
     haskey(renderable_dict, "texture") || @error "Reading scene: Texture path must be an argument of a quad renderer component."
-
-    return Quad(TextureResource_Load(renderable_dict["texture"]).texture)
+    return Quad(TextureResource_Load(renderable_dict["texture"]).texture, renderable_dict["program"])
+  elseif renderable_dict["type"] == "model"
+    haskey(renderable_dict, "path") || @error "Reading scene: Path must be an argument of a model renderer component."
+    return Model(renderable_dict["path"], renderable_dict["program"])
   else
     @error "Reading scene: renderable type not found"
   end
