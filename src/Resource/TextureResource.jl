@@ -7,6 +7,7 @@ struct TextureResourceData <: ResourceData
   texture::TextureData
 end
 
+# Load texture resource
 function TextureResource_Load(texture_path)::TextureResourceData
   if (ResourcePool_Exists(texture_path))
     return ResourcePool_GetElement(texture_path)::TextureResourceData
@@ -27,10 +28,10 @@ function TextureResource_Load(texture_path)::TextureResourceData
   texture_data = TextureResourceData(texture_path, texture)
   ResourcePool_Register(texture_path, texture_data)
 
-  # stbi_image_free(tex_data)
   texture_data
 end
 
+# Unload texture resource
 function TextureResource_Unload(texture_path)
   ResourcePool_Unregister(texture_path)
 end

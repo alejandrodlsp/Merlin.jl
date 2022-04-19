@@ -5,10 +5,11 @@ import GLFW
 import DataStructures
 import JSON
 import FileIO
+import Meshes
 
 include("Math/Math.jl")
-include("Resource/Resource.jl")
 include("Renderer/Renderer.jl")
+include("Resource/Resource.jl")
 include("Logger.jl")
 include("Window.jl")
 include("Scene/SceneManager.jl")
@@ -89,7 +90,6 @@ function Application_Init(params::ApplicationParams)::ApplicationData
   dotenv()
 
   loggerData = Logger_Init()
-  Resource_Init()
 
   Window_Init(params.window, params.onEvent)
 
@@ -112,7 +112,7 @@ function Application_Run()
   Application_Get().onStart()
 
   while !Application_ShouldClose()
-    Renderer_Tick()
+    Renderer_Update()
 
     Application_Get().onUpdate()
     SceneManager_OnUpdate()

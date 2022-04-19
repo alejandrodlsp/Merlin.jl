@@ -63,15 +63,23 @@ function ParseComponent(component_dict)::BaseComponent
 end
 
 function ParseRenderable(renderable_dict)::Renderable
-  haskey(renderable_dict, "type") || @error "Reading scene: Type must be an argument of a renderable component."
-  haskey(renderable_dict, "program") || @error "Reading scene: Program path must be an argument of a renderable component."
+  haskey(renderable_dict, "type") || @error "Reading scene: Transform must be an argument of a renderable component."
+  haskey(renderable_dict, "program") || @error "Reading scene: Program must be an argument of a renderable component."
+
+  program = ProgramResource_Load(renderable_dict["program"]).program
 
   if renderable_dict["type"] == "quad"
     haskey(renderable_dict, "texture") || @error "Reading scene: Texture path must be an argument of a quad renderer component."
-    return Quad(TextureResource_Load(renderable_dict["texture"]).texture, renderable_dict["program"])
-  elseif renderable_dict["type"] == "model"
-    haskey(renderable_dict, "path") || @error "Reading scene: Path must be an argument of a model renderer component."
-    return Model(renderable_dict["path"], renderable_dict["program"])
+    return Quad(TextureResource_Load(renderable_dict["texture"]).texture, program)
+  elseif renderable_dict["type"] == "box"
+    haskey(renderable_dict, "c1") || @error "Reading scene: C1 must be an argument of a Box renderer component."
+    haskey(renderable_dict, "c2") || @error "Reading scene: C2 must be an argument of a Box renderer component."
+    haskey(renderable_dict, "color") || (renderable_dict["color"] = Merlin_PrimitiveDefaultColor)
+    return Box(Vector3{GLfloat}(renderable_dict["c1"]), Vector3{GLfloat}(renderable_dict["c2"]), program, Vector3{Float64}(renderable_dict["color"]))
+  elseif renderable_dict["type"] == "sphere"
+    haskey(renderable_dict, "radius") || @error "Reading scene: radius must be an argument of a Sphere renderer component."
+    haskey(renderable_dict, "color") || (renderable_dict["color"] = Merlin_PrimitiveDefaultColor)
+    return Sphere(GLfloat(renderable_dict["radius"]), program, Vector3{Float64}(renderable_dict["color"]))
   else
     @error "Reading scene: renderable type not found"
   end

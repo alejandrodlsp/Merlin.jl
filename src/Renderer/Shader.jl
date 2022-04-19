@@ -5,6 +5,7 @@ struct ShaderData
   type::ShaderType
 end
 
+# Get info log for shader
 function Shader_GetInfoLog(shader::ShaderData)::Vector{GLchar}
   max_length = GLint(0)
   @c glGetShaderiv(shader.id, GL_INFO_LOG_LENGTH, &max_length)
@@ -16,12 +17,14 @@ function Shader_GetInfoLog(shader::ShaderData)::Vector{GLchar}
   log
 end
 
+# Get compilation status for shader
 function Shader_GetCompileStatus(shader::ShaderData)::Bool
   success = GLint(-1)
   @c glGetShaderiv(shader.id, GL_COMPILE_STATUS, &success)
   success == GL_TRUE
 end
 
+# Create shader based on source code and shader type
 function Shader_Create(source::String, type::ShaderType)::ShaderData
   shader = glCreateShader(type == SHADER_TYPE_VERTEX ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER)
   glShaderSource(shader, 1, Ptr{GLchar}[pointer(source)], C_NULL)
@@ -33,6 +36,7 @@ function Shader_Create(source::String, type::ShaderType)::ShaderData
   shader_data
 end
 
+# Destroy shader
 function Shader_Destroy(shader::ShaderData)
   glDeleteShader(shader.id)
 end
