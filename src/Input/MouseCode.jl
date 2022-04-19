@@ -1,3 +1,4 @@
+# Enumeration of mouse codes and relative assigned OpenGL code
 @enum MouseCode::Cint begin
   MOUSE_BUTTON_1 = 0
   MOUSE_BUTTON_2 = 1
@@ -9,6 +10,7 @@
   MOUSE_BUTTON_8 = 7
 end
 
+# Define constant buttons
 const MOUSE_BUTTON_LEFT = MOUSE_BUTTON_1
 const MOUSE_BUTTON_RIGHT = MOUSE_BUTTON_2
 const MOUSE_BUTTON_MIDDLE = MOUSE_BUTTON_3

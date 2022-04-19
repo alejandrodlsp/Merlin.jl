@@ -6,10 +6,7 @@ struct ProgramResourceData <: ResourceData
   program::ProgramData
 end
 
-function Program_DefaultProgramPath()::String
-  haskey(ENV, "MERLIN_DEFAULT_PROGRAM_PATH") ? ENV["MERLIN_DEFAULT_PROGRAM_PATH"] : "Resources/Program/default.glsl"
-end
-
+# Load program resource from file
 function ProgramResource_Load(program_path::String)::ProgramResourceData
   if (ResourcePool_Exists(program_path))
     return (ResourcePool_GetElement(program_path)::ProgramResourceData)
@@ -34,6 +31,7 @@ function ProgramResource_Load(program_path::String)::ProgramResourceData
   program_data
 end
 
+# Unload program resource
 function ProgramResource_Unload(program::ProgramResourceData)
   Program_Destroy(program.program)
   ResourcePool_Unregister(program.path)

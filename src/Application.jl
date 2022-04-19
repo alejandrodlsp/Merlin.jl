@@ -5,6 +5,7 @@ import GLFW
 import DataStructures
 import JSON
 import FileIO
+import Meshes
 
 include("Math/Math.jl")
 include("Renderer/Renderer.jl")
@@ -89,7 +90,6 @@ function Application_Init(params::ApplicationParams)::ApplicationData
   dotenv()
 
   loggerData = Logger_Init()
-  Resource_Init()
 
   Window_Init(params.window, params.onEvent)
 
@@ -107,23 +107,12 @@ See also [`Application_Shutdown`](@ref).
 ```
 """
 function Application_Run()
-  glEnable(GL_DEPTH_TEST)
-  glEnable(GL_BLEND)
-  glEnable(GL_ALPHA_TEST)
-  glDepthFunc(GL_LESS)
-
-  # enable cull face
-  glEnable(GL_CULL_FACE)
-  glCullFace(GL_BACK)
-  glFrontFace(GL_CW)
-
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+  Renderer_Initialize()
 
   Application_Get().onStart()
 
   while !Application_ShouldClose()
-    glClearColor(0.1, 0.1, 0.1, 1.0)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    Renderer_Update()
 
     Application_Get().onUpdate()
     SceneManager_OnUpdate()

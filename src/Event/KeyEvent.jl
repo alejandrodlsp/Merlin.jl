@@ -1,3 +1,10 @@
+"""
+    KeyEventData::EventData
+
+Data structure for a key event
+
+See also [`EventData`](@ref).
+"""
 struct KeyEventData <: EventData
   type::EventType
   code::Cint
