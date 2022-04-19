@@ -1,12 +1,5 @@
 <div id="top"></div>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -15,17 +8,7 @@
   </a>
 
   <h3 align="center">A Julia-based game engine API</h3>
-
-  <p align="center">
-    <a href=""><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    ·
-    <a href="https://github.com/alejandrodlsp/Merlin/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/alejandrodlsp/Merlin/issues">Request Feature</a>
-  </p>
+  <br/>
 </div>
 
 <br/>
@@ -60,7 +43,9 @@ Merlin is a game engine API based on the [Julia programming language](https://ju
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-### Built With
+<hr>
+
+### <b>Built With</b>
 
 This project makes uses of some external mathematical and rendering libraries:
 
@@ -68,8 +53,12 @@ This project makes uses of some external mathematical and rendering libraries:
 - [ModernGL.jl](https://github.com/JuliaGL/ModernGL.jl)
 - [GLFW.jl](https://github.com/JuliaGL/GLFW.jl)
 - [FileIO.jl](https://github.com/JuliaIO/FileIO.jl)
+- [Csyntax.jl](https://github.com/Gnimuc/CSyntax.jl)
+- [Meshes.jl](https://github.com/JuliaGeometry/Meshes.jl)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+<hr>
 
 <!-- GETTING STARTED -->
 
@@ -109,10 +98,10 @@ pkg> instantiate .
 
 ## Usage
 
-To get started, you will need to create a Julia file and include the Application entry point
+To get started, you will need to create a Julia file and include the Application entry point.
 
 ```julia
-include('Core/Application.jl')
+using Merlin
 ```
 
 You can create an application and window context by creating an application object.
@@ -124,27 +113,48 @@ app = Application_Init(ApplicationParams())
 Then start the application loop by running
 
 ```julia
-Application_Run(app)
+Application_Run()
 ```
 
-### Using application parameters
+### <b>Creating window parameters </b>
+
+You can create window parameters to pass in in the application initialization. All parameters are optional.
+
+```julia
+window_params = WindowParams(
+  windowSize::Vector2{Int}
+  maxWindowSize::Vector2{Int}
+  minWindowSize::Vector2{Int}
+  fullscreen::Bool
+  name::String
+)
+```
+
+### <b>Using application parameters </b>
 
 You can specify parameters for the application by passing an ApplicationParams object to the Application initialization function.
 
 ```julia
-app = Application_Init(ApplicationParams(
-  WindowSize = (100, 100),
-  MaxWindowSize = (200, 200)
-  MinWindowSize= (50, 50),
-  Fullscreen = false,
-  OnEvent = (e) -> (),
-  OnUpdate = () -> (),
-  OnRender = () -> (),
-  Name = "Merlin Engine application"
-))
+app_parameters = ApplicationParams(
+  window::WindowParams
+  onStart::Function
+  onShutdown::Function
+  onEvent::Function
+  onUpdate::Function
+  onRender::Function
+)
 ```
 
-### Handling events
+Then pass in the app parameters in the initialization method.
+
+```julia
+app = Application_Init(app_parameters)
+```
+
+### <b>Handling events</b>
+
+You can register new event listeners by defining callback functions in application initialization. The onEvent callback will recieve an abstract event type.
+Each event type has its own data associated, for example, EventTypeMouseMoved contains data about the new mouse cursor position.
 
 ```julia
  function onEvent(e)
@@ -154,45 +164,77 @@ app = Application_Init(ApplicationParams(
  end
 ```
 
-### Pooling input
+### <b>Pooling input</b>
+
+You can also dynamically check if an input is activated in a specific point in time.
 
 ```julia
-if Input_IsKeyPressed(KEY_SPACE)
+if Input_IsKeyPressed(Merlin.KEY_SPACE)
   println("Jump!")
 end
 ```
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+Options: <i>Input_IsKeyPressed, Input_IsMouseButtonPressed, Input_GetMousePos</i>
 
-<!-- LICENSE -->
+### <b>Creating a new scene</b>
 
-## License
+You can programatically create a new scene and add entities manually.
 
-See `LICENSE.txt` for more information.
+```julia
+camera = PerspectiveCamera()
+scene = CreateScene("name", camera, Vector{GameEntity}())
+```
+
+Then in the onStart application callback you can load the newly created scene.
+
+```julia
+LoadScene(scene)
+```
+
+You can also load a scene from a scene definition file.
+
+```julia
+scene = LoadScene("path_to_scene.json")
+```
+
+### <b>Creating game entities</b>
+
+Firstly, game entities need renderable components, we can create a primitive sphere:
+
+```julia
+program = ProgramResource_Load("path_to_program.glsl").program
+sphere_renderable = Sphere(
+                      1.5,
+                      program,
+                      Vector3{Float64}(0.0,0.2,0.5)
+                      ) # Radius, program, color::optional
+```
+
+Then we can create a new game entity
+
+```julia
+entity = GameEntity(sphere_renderable) # Renderable, transform::Optional, componentList::Optional
+```
+
+Then we can instantiate the entity in the scene
+
+```julia
+Instantiate(scene, entity)
+```
+
+<hr>
 
 <!-- CONTACT -->
 
 ## Contact
 
 Alejandro de los Santos - alejandrodlsp@hotmail.es
-
-Project Link: [https://github.com/alejandrodlsp/merlin](https://github.com/alejandrodlsp/merlin)
+<br>
+Student ID: 18218822
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/alejandrodlsp/grogu-bot.svg?style=flat
-[contributors-url]: https://github.com/alejandrodlsp/grogu-bot/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/alejandrodlsp/grogu-bot.svg?style=flat
-[forks-url]: https://github.com/alejandrodlsp/grogu-bot/network/members
-[stars-shield]: https://img.shields.io/github/stars/alejandrodlsp/grogu-bot.svg?style=flat
-[stars-url]: https://github.com/alejandrodlsp/grogu-bot/stargazers
-[issues-shield]: https://img.shields.io/github/issues/alejandrodlsp/grogu-bot.svg?style=flat
-[issues-url]: https://github.com/alejandrodlsp/grogu-bot/issues
-[license-shield]: https://img.shields.io/github/license/alejandrodlsp/grogu-bot.svg?style=flat
-[license-url]: https://github.com/alejandrodlsp/grogu-bot/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/alejandro-de-los-santos-84152916b/
 [product-screenshot]: images/Capture.png

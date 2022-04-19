@@ -4,12 +4,14 @@ const MOD_CONTROL = 0x0002
 const MOD_ALT = 0x0004
 const MOD_SUPER = 0x0008
 
+# Enumeration of key actions and assigned OpenGL codes
 @enum KeyAction::Cint begin
   KEY_RELEASE = 0
   KEY_PRESS = 1
   KEY_REPEAT = 2
 end
 
+# Enumeration of key codes and assigned OpenGL codes
 @enum KeyCode::Cint begin
   # Unknown key
   KEY_UNKNOWN = -1

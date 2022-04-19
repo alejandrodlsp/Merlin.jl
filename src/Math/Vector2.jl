@@ -5,6 +5,7 @@ mutable struct Vector2{R<:Real} <: AbstractVector{2,R}
   y::R
 end
 
+# Vector2 constructors
 Vector2() = Vector2(0.0, 0.0)
 Vector2(t::Tuple) = Vector2(promote(t...)...)
 toArray(v::Vector2) = ([v.x; v.y])

@@ -6,10 +6,12 @@ mutable struct Vector3{R<:Real} <: AbstractVector{3,R}
   z::R
 end
 
+# Vector3 constructors and helper methods
 Vector3() = Vector3(0.0, 0.0, 0.0)
 Vector3(t::Tuple) = VecE3(promote(t...)...)
 toArray(v::Vector3) = ([v.x; v.y; v.z])
 
+# Vector constants
 Vector3_Right() = Vector3(1.0, 0.0, 0.0)
 Vector3_Up() = Vector3(0.0, 1.0, 0.0)
 Vector3_Forward() = Vector3(0.0, 0.0, 1.0)

@@ -2,9 +2,10 @@ abstract type Component end
 
 struct ComponentReference
   file::String
-  constructor::String  
+  constructor::String
 end
 
+# Base component type
 mutable struct BaseComponent <: Component
   entity
   data
@@ -22,6 +23,7 @@ mutable struct BaseComponent <: Component
     OnUpdate::Function = (c) -> ()) = new(nothing, Data, OnActivate, OnDeactivate, OnStart, OnUpdate, Is_active)
 end
 
+# Activate component
 function setActive(component::BaseComponent, active::Bool)
   if (component.is_active && !active)
     component.is_active = false

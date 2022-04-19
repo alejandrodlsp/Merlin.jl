@@ -13,9 +13,7 @@ function Logger_Init()::LoggerData
   io = nothing
   logger = nothing
 
-  @assert haskey(ENV, "MERLIN_ENVIRONMENT") "Merlin environment variable undefined. Did you forget to define ENV[\"MERLIN_ENVIRONMENT\"] ?"
-
-  if ENV["MERLIN_ENVIRONMENT"] == "DEBUG"
+  if haskey(ENV, "MERLIN_ENVIRONMENT") && ENV["MERLIN_ENVIRONMENT"] == "DEBUG"
     ENV["JULIA_DEBUG"] = Main
     if haskey(ENV, "MERLIN_LOG_PATH")
       io = open(ENV["MERLIN_LOG_PATH"], "w+")
